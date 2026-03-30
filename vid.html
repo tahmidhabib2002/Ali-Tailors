@@ -1,3 +1,351 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>◢ DUAL GRID PLAYER | YouTube + Facebook | автономный эмулятор</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #010103;
+      --panel: #0b0b12;
+      --border: #21212e;
+      --accent: #00f2c6;
+      --accent2: #ff4270;
+      --text: #eef0ff;
+      --muted: #6a6a8b;
+      --glow: 0 0 16px rgba(0, 242, 198, 0.35);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* cyber noise */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 12;
+      padding: 28px 28px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo {
+      font-family: 'Rajdhani', monospace;
+      font-size: clamp(1.8rem, 5vw, 2.9rem);
+      font-weight: 700;
+      letter-spacing: 5px;
+      background: linear-gradient(120deg, var(--accent), var(--accent2), #ffb347);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 6px rgba(0,242,198,0.2);
+    }
+
+    .tagline {
+      font-size: 0.7rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .input-section {
+      position: relative;
+      z-index: 12;
+      margin: 28px auto 0;
+      max-width: 780px;
+      padding: 0 20px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+      background: rgba(8, 8, 14, 0.75);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 6px 6px 18px;
+      transition: 0.2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'Exo 2', monospace;
+      font-size: 0.9rem;
+      padding: 10px 0;
+    }
+
+    .input-wrapper input::placeholder {
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .btn-play {
+      background: linear-gradient(145deg, var(--accent), #00bc96);
+      color: #010101;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      border: none;
+      padding: 0 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn-play:hover {
+      transform: scale(1.02);
+      filter: brightness(1.05);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hint span {
+      color: var(--accent);
+      background: rgba(0,242,198,0.1);
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+
+    .status-panel {
+      position: relative;
+      z-index: 12;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 780px;
+      margin: 20px auto 0;
+      padding: 0 24px;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4f4f6e;
+      transition: 0.2s;
+    }
+
+    .live .dot {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .live .label {
+      color: var(--accent);
+    }
+
+    .platform-badge {
+      background: #15151f;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .grid-container {
+      position: relative;
+      z-index: 8;
+      padding: 28px 20px 50px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .cell {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #08080e;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #262633;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .cell:hover {
+      border-color: var(--accent);
+      transform: scale(1.01);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell iframe, .cell .youtube-player {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .cell .badge {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(2px);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      z-index: 15;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    .cell .platform-icon {
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      font-size: 0.65rem;
+      background: rgba(0,0,0,0.55);
+      padding: 2px 6px;
+      border-radius: 4px;
+      z-index: 15;
+      pointer-events: none;
+      font-weight: 500;
+      color: #aaa;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 340px;
+      gap: 16px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      opacity: 0.3;
+    }
+
+    .counter-footer {
+      position: fixed;
+      bottom: 18px;
+      right: 24px;
+      z-index: 30;
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.7rem;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(5px);
+      padding: 6px 14px;
+      border-radius: 40px;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+
+    .counter-footer strong {
+      color: var(--accent);
+      font-size: 1.2rem;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⎈ GRID FUSION ⎈</div>
+  <div class="tagline">YOUTUBE · FACEBOOK · 30× INDEPENDENT STREAMS</div>
+</header>
+
+<div class="input-section">
+  <div class="input-wrapper">
+    <input type="text" id="videoUrl" placeholder="https://youtu.be/...  หรือ  https://facebook.com/watch/?v=123456" autocomplete="off" />
+    <button class="btn-play" id="launchBtn">▶ ACTIVATE MATRIX</button>
+  </div>
+  <p class="hint"><span>✦</span> YouTube / Facebook — প্রতিটি টাইল আলাদা এম্বেড কনফিগারেশন + ইউজার সিমুলেশন <span>✦</span></p>
+</div>
+
+<div class="status-panel" id="statusPanel">
+  <div class="live-badge" id="liveStatus">
+    <span class="dot"></span>
+    <span class="label" id="statusMsg">অপেক্ষায়</span>
+  </div>
+  <div class="platform-badge" id="platformIndicator">⚡ DUAL MODE</div>
+</div>
+
+<div class="grid-container">
+  <div class="grid" id="videoGrid">
+    <div class="empty-state">
+      <div class="empty-icon">◰ ◱</div>
+      <div class="empty-text">YouTube / Facebook URL দিন এবং গ্রিড সক্রিয় করুন</div>
+    </div>
+  </div>
+</div>
+
+<div class="counter-footer" id="counterBox" style="display: none;">
+  <strong id="activeCount">30</strong> <span>স্ট্রিম লাইভ</span>
+</div>
+
+<!-- YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
 <script>
   // ---------- CONFIG ----------
   const TOTAL_TILES = 30;
@@ -316,3 +664,5 @@
 
   console.log('Dual Grid Player — ready');
 </script>
+</body>
+</html>
