@@ -1,359 +1,9 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>◢ DUAL GRID PLAYER | YouTube + Facebook | автономный эмулятор</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --bg: #010103;
-      --panel: #0b0b12;
-      --border: #21212e;
-      --accent: #00f2c6;
-      --accent2: #ff4270;
-      --text: #eef0ff;
-      --muted: #6a6a8b;
-      --glow: 0 0 16px rgba(0, 242, 198, 0.35);
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Exo 2', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* cyber noise */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    header {
-      position: relative;
-      z-index: 12;
-      padding: 28px 28px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .logo {
-      font-family: 'Rajdhani', monospace;
-      font-size: clamp(1.8rem, 5vw, 2.9rem);
-      font-weight: 700;
-      letter-spacing: 5px;
-      background: linear-gradient(120deg, var(--accent), var(--accent2), #ffb347);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 6px rgba(0,242,198,0.2);
-    }
-
-    .tagline {
-      font-size: 0.7rem;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 300;
-    }
-
-    .input-section {
-      position: relative;
-      z-index: 12;
-      margin: 28px auto 0;
-      max-width: 780px;
-      padding: 0 20px;
-    }
-
-    .input-wrapper {
-      display: flex;
-      gap: 12px;
-      align-items: stretch;
-      background: rgba(8, 8, 14, 0.75);
-      backdrop-filter: blur(4px);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 6px 6px 18px;
-      transition: 0.2s;
-    }
-
-    .input-wrapper:focus-within {
-      border-color: var(--accent);
-      box-shadow: var(--glow);
-    }
-
-    .input-wrapper input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: 'Exo 2', monospace;
-      font-size: 0.9rem;
-      padding: 10px 0;
-    }
-
-    .input-wrapper input::placeholder {
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
-
-    .btn-play {
-      background: linear-gradient(145deg, var(--accent), #00bc96);
-      color: #010101;
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 800;
-      font-size: 0.9rem;
-      letter-spacing: 2px;
-      border: none;
-      padding: 0 28px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: 0.2s;
-      text-transform: uppercase;
-    }
-
-    .btn-play:hover {
-      transform: scale(1.02);
-      filter: brightness(1.05);
-      box-shadow: 0 0 10px var(--accent);
-    }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 0.7rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .hint span {
-      color: var(--accent);
-      background: rgba(0,242,198,0.1);
-      padding: 2px 6px;
-      border-radius: 20px;
-    }
-
-    .status-panel {
-      position: relative;
-      z-index: 12;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 780px;
-      margin: 20px auto 0;
-      padding: 0 24px;
-      font-size: 0.7rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4f4f6e;
-      transition: 0.2s;
-    }
-
-    .live .dot {
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .live .label {
-      color: var(--accent);
-    }
-
-    .platform-badge {
-      background: #15151f;
-      padding: 2px 12px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-
-    .grid-container {
-      position: relative;
-      z-index: 8;
-      padding: 28px 20px 50px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-
-    .cell {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      background: #08080e;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid #262633;
-      transition: all 0.25s ease;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .cell:hover {
-      border-color: var(--accent);
-      transform: scale(1.01);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-    }
-
-    .cell iframe, .cell .youtube-player {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .cell .badge {
-      position: absolute;
-      top: 8px;
-      left: 10px;
-      font-family: 'Rajdhani', monospace;
-      font-size: 0.68rem;
-      font-weight: 700;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(2px);
-      color: var(--accent);
-      padding: 2px 8px;
-      border-radius: 4px;
-      z-index: 15;
-      letter-spacing: 0.5px;
-      pointer-events: none;
-    }
-
-    .cell .platform-icon {
-      position: absolute;
-      bottom: 6px;
-      right: 8px;
-      font-size: 0.65rem;
-      background: rgba(0,0,0,0.55);
-      padding: 2px 6px;
-      border-radius: 4px;
-      z-index: 15;
-      pointer-events: none;
-      font-weight: 500;
-      color: #aaa;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 340px;
-      gap: 16px;
-      color: var(--muted);
-    }
-
-    .empty-icon {
-      font-size: 4rem;
-      opacity: 0.3;
-    }
-
-    .counter-footer {
-      position: fixed;
-      bottom: 18px;
-      right: 24px;
-      z-index: 30;
-      font-family: 'Rajdhani', monospace;
-      font-size: 0.7rem;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(5px);
-      padding: 6px 14px;
-      border-radius: 40px;
-      letter-spacing: 1px;
-      color: var(--muted);
-    }
-
-    .counter-footer strong {
-      color: var(--accent);
-      font-size: 1.2rem;
-      margin-right: 4px;
-    }
-  </style>
-</head>
-<body>
-
-<header>
-  <div class="logo">⎈ GRID FUSION ⎈</div>
-  <div class="tagline">YOUTUBE · FACEBOOK · 30× INDEPENDENT STREAMS</div>
-</header>
-
-<div class="input-section">
-  <div class="input-wrapper">
-    <input type="text" id="videoUrl" placeholder="https://youtu.be/...  หรือ  https://facebook.com/watch/?v=123456" autocomplete="off" />
-    <button class="btn-play" id="launchBtn">▶ ACTIVATE MATRIX</button>
-  </div>
-  <p class="hint"><span>✦</span> YouTube / Facebook — প্রতিটি টাইল আলাদা এম্বেড কনফিগারেশন + ইউজার সিমুলেশন <span>✦</span></p>
-</div>
-
-<div class="status-panel" id="statusPanel">
-  <div class="live-badge" id="liveStatus">
-    <span class="dot"></span>
-    <span class="label" id="statusMsg">অপেক্ষায়</span>
-  </div>
-  <div class="platform-badge" id="platformIndicator">⚡ DUAL MODE</div>
-</div>
-
-<div class="grid-container">
-  <div class="grid" id="videoGrid">
-    <div class="empty-state">
-      <div class="empty-icon">◰ ◱</div>
-      <div class="empty-text">YouTube / Facebook URL দিন এবং গ্রিড সক্রিয় করুন</div>
-    </div>
-  </div>
-</div>
-
-<div class="counter-footer" id="counterBox" style="display: none;">
-  <strong id="activeCount">30</strong> <span>স্ট্রিম লাইভ</span>
-</div>
-
-<!-- YouTube IFrame API -->
-<script src="https://www.youtube.com/iframe_api"></script>
-
 <script>
   // ---------- CONFIG ----------
   const TOTAL_TILES = 30;
-  let activePlatform = null;      // 'youtube' or 'facebook'
-  let youTubePlayers = [];        // array of YT.Player instances
-  let rewindTimeouts = [];
-  let currentVideoId = null;      // for youtube: video id; for fb: video url/id
-  let currentFBUrl = null;
+  let activePlatform = null;
+  let youTubePlayers = [];
+  let fbReloadIntervals = [];
 
   // DOM elements
   const gridContainer = document.getElementById('videoGrid');
@@ -365,7 +15,7 @@
   const counterBox = document.getElementById('counterBox');
   const activeCountSpan = document.getElementById('activeCount');
 
-  // helper: extract YouTube video ID (robust)
+  // ---------- Utility: YouTube ID extraction ----------
   function extractYouTubeId(url) {
     try {
       const u = new URL(url.trim());
@@ -381,10 +31,9 @@
     return match ? match[1] : null;
   }
 
-  // extract Facebook video ID (supports various formats)
+  // ---------- Utility: Facebook ID extraction ----------
   function extractFacebookId(url) {
-    let cleanUrl = url.trim();
-    // pattern: facebook.com/watch?v=123456789, facebook.com/username/videos/123456789, fb.watch/...
+    const cleanUrl = url.trim();
     let match = cleanUrl.match(/facebook\.com\/watch\/?\?v=([0-9]+)/i);
     if (match) return match[1];
     match = cleanUrl.match(/facebook\.com\/[^\/]+\/videos\/([0-9]+)/i);
@@ -394,51 +43,11 @@
     match = cleanUrl.match(/\/video\.php\?v=([0-9]+)/i);
     if (match) return match[1];
     match = cleanUrl.match(/v=([0-9]{10,})/);
-    if (match) return match[1];
-    return null;
+    return match ? match[1] : null;
   }
 
-  // generate random offset between 2 and 40 seconds (for youtube start time)
-  function getRandomStartOffset(maxDuration = 90) {
-    // we don't know real duration yet, so first start random 0-45 seconds later we will seek again after ready
-    return Math.floor(Math.random() * 45);
-  }
-
-  // Generate unique "fingerprint" parameters for each tile to emulate different session
-  function getRandomYoutubeDomain() {
-    return Math.random() > 0.5 ? 'www.youtube.com' : 'www.youtube-nocookie.com';
-  }
-
-  // Create a unique, seemingly distinct embed for each tile (youtube iframe without API, but we need API for seek control)
-  // Actually we'll use YT API for full control: but we still add random params to each player src (origin variation)
-  function getUniqueYtPlayerParams(videoId, index) {
-    const randomStart = Math.floor(Math.random() * 48);
-    // random origin spoof (just cosmetic but helps differentiate)
-    const fakeOrigin = `https://${Math.random().toString(36).substring(2,8)}.grid.local`;
-    return {
-      videoId: videoId,
-      playerVars: {
-        autoplay: 1,
-        mute: 1,
-        loop: 0,          // we handle loop via rewinding simulation (human-like)
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        disablekb: 1,
-        iv_load_policy: 3,
-        start: randomStart,
-        origin: fakeOrigin,
-        host: getRandomYoutubeDomain(),
-        playsinline: 1,
-        // additional random param to break cache
-        _rnd: Math.random().toString(36),
-      },
-    };
-  }
-
-  // simulate human rewind: when video reaches near end (last X seconds), seek back to a random earlier position
-  function setupHumanRewind(player, playerIndex) {
-    if (!player || typeof player.getCurrentTime !== 'function') return;
+  // ---------- YouTube Player: human-like rewind simulation ----------
+  function setupHumanRewind(player) {
     let rewindTriggered = false;
     const checkInterval = setInterval(() => {
       try {
@@ -447,120 +56,139 @@
           const duration = player.getDuration();
           const current = player.getCurrentTime();
           if (duration && duration > 0 && !rewindTriggered && current > 0) {
-            // if less than 8 seconds left -> rewind like a human (skip back 8~18 seconds)
             const threshold = 7.5;
             if (current >= duration - threshold && duration - current < 12) {
               rewindTriggered = true;
-              // human-like: rewind to a random point between 15 and 40 seconds before end, or middle section
               const rewindTo = Math.max(0, duration - (Math.floor(Math.random() * 25) + 12));
-              const finalSeek = Math.min(duration - 1.5, Math.max(0, rewindTo));
+              const finalSeek = Math.min(duration - 1.5, rewindTo);
               setTimeout(() => {
                 try {
                   player.seekTo(finalSeek, true);
-                  // reset rewindTriggered after seek so it can happen again later
                   setTimeout(() => { rewindTriggered = false; }, 2000);
                 } catch(e) {}
-              }, Math.random() * 1800 + 300); // mimic hesitation
+              }, Math.random() * 1800 + 300);
             }
           }
         }
       } catch(e) {}
     }, 3100);
-    // store interval for optional cleanup
     player._rewindInterval = checkInterval;
   }
 
-  // create YouTube player using API (individual control)
-  function createYouTubePlayer(element, videoId, tileIndex, containerDiv) {
-    const params = getUniqueYtPlayerParams(videoId, tileIndex);
-    const playerDiv = document.createElement('div');
-    playerDiv.id = `yt-player-${tileIndex}-${Date.now()}-${Math.floor(Math.random()*10000)}`;
-    playerDiv.style.width = '100%';
-    playerDiv.style.height = '100%';
-    containerDiv.appendChild(playerDiv);
+  // ---------- Create a single YouTube player ----------
+  function createYouTubePlayer(container, videoId, tileIndex) {
+    return new Promise((resolve, reject) => {
+      const playerDiv = document.createElement('div');
+      playerDiv.id = `yt-${Date.now()}-${tileIndex}-${Math.random().toString(36).substr(2, 5)}`;
+      playerDiv.style.width = '100%';
+      playerDiv.style.height = '100%';
+      container.appendChild(playerDiv);
 
-    const ytPlayer = new YT.Player(playerDiv.id, {
-      videoId: videoId,
-      width: '100%',
-      height: '100%',
-      playerVars: {
-        autoplay: 1,
-        mute: 1,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        disablekb: 1,
-        iv_load_policy: 3,
-        start: params.playerVars.start,
-        origin: params.playerVars.origin,
-        host: params.playerVars.host,
-        playsinline: 1,
-        enablejsapi: 1,
-      },
-      events: {
-        onReady: (event) => {
-          // random seek again to make start times diverse
-          const extraRandom = Math.floor(Math.random() * 52);
-          event.target.seekTo(extraRandom, true);
-          // apply human-like rewind simulation
-          setupHumanRewind(event.target, tileIndex);
+      // Random start offset (0-40 seconds) for diversity
+      const startOffset = Math.floor(Math.random() * 40);
+
+      const player = new YT.Player(playerDiv.id, {
+        videoId: videoId,
+        width: '100%',
+        height: '100%',
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          start: startOffset,
+          playsinline: 1,
+          enablejsapi: 1,
         },
-        onError: (err) => console.warn(`YT tile ${tileIndex} error`, err),
-      }
+        events: {
+          onReady: (event) => {
+            // Additional random seek to make start times even more varied
+            const extraSeek = Math.floor(Math.random() * 45);
+            event.target.seekTo(extraSeek, true);
+            setupHumanRewind(event.target);
+            resolve(player);
+          },
+          onError: (err) => {
+            console.warn(`YouTube tile ${tileIndex} error:`, err);
+            reject(err);
+          }
+        }
+      });
     });
-    return ytPlayer;
   }
 
-  // Facebook embed (loop & autoplay) with unique rnd per tile + different app_id spoof
-  function createFacebookEmbed(videoId, tileIndex, containerDiv) {
-    const fbEmbedUrl = `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D${videoId}&autoplay=1&muted=1&loop=1&show_text=0&width=0&height=0&app_id=${Math.floor(Math.random()*90000)+10000}&_t=${tileIndex}_${Date.now()}_${Math.random()}`;
+  // ---------- Create Facebook embed ----------
+  function createFacebookEmbed(container, videoId, tileIndex) {
+    // Fixed app_id (public demo ID) – avoid random to prevent authorization issues
+    const appId = '966242223397117';
+    const embedUrl = `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D${videoId}&autoplay=1&muted=1&show_text=0&app_id=${appId}&_tile=${tileIndex}&_rnd=${Date.now()}`;
+    
     const iframe = document.createElement('iframe');
-    iframe.src = fbEmbedUrl;
+    iframe.src = embedUrl;
     iframe.allow = 'autoplay; encrypted-media; fullscreen';
     iframe.setAttribute('allowfullscreen', 'true');
     iframe.style.width = '100%';
     iframe.style.height = '100%';
     iframe.style.border = 'none';
-    containerDiv.appendChild(iframe);
-    // facebook can't be controlled via JS, but we add a random reload effect to mimic "user interaction" (soft loop)
-    // every 45-80 sec, reload iframe to appear like fresh session (avoid endless same session)
-    const reloadInterval = setInterval(() => {
+    container.appendChild(iframe);
+
+    // Simulate session refresh every 45-80 seconds to mimic new viewer
+    const refreshInterval = setInterval(() => {
       try {
-        const newSrc = iframe.src.split('&_t=')[0] + `&_reload=${Date.now()}&_rnd=${Math.random()}`;
+        const newSrc = iframe.src.split('&_rnd=')[0] + `&_rnd=${Date.now()}`;
         iframe.src = newSrc;
       } catch(e) {}
-    }, Math.random() * 35000 + 40000);
-    containerDiv._fbReload = reloadInterval;
+    }, Math.random() * 35000 + 45000);
+    
+    fbReloadIntervals.push(refreshInterval);
     return iframe;
   }
 
-  // reset grid & clear existing timers/players
+  // ---------- Cleanup all players and intervals ----------
   function destroyAllPlayers() {
-    // clear intervals for youtube players
-    if (youTubePlayers && youTubePlayers.length) {
-      youTubePlayers.forEach(p => {
-        if (p && p._rewindInterval) clearInterval(p._rewindInterval);
-        try { p.destroy && p.destroy(); } catch(e) {}
-      });
-    }
+    // Destroy YouTube players
+    youTubePlayers.forEach(player => {
+      if (player && player._rewindInterval) clearInterval(player._rewindInterval);
+      try { if (player && player.destroy) player.destroy(); } catch(e) {}
+    });
     youTubePlayers = [];
-    if (rewindTimeouts.length) {
-      rewindTimeouts.forEach(t => clearTimeout(t));
-      rewindTimeouts = [];
-    }
-    // clear all fb intervals
-    const allCells = document.querySelectorAll('.cell');
-    allCells.forEach(cell => {
-      if (cell._fbReload) clearInterval(cell._fbReload);
+
+    // Clear Facebook refresh intervals
+    fbReloadIntervals.forEach(interval => clearInterval(interval));
+    fbReloadIntervals = [];
+
+    // Remove all cells to free memory
+    gridContainer.innerHTML = '';
+  }
+
+  // ---------- Wait for YouTube API to be ready ----------
+  function waitForYouTubeAPI() {
+    return new Promise((resolve) => {
+      if (window.YT && window.YT.Player) {
+        resolve();
+      } else {
+        const checkInterval = setInterval(() => {
+          if (window.YT && window.YT.Player) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
+        // Fallback: if API never loads, still resolve after 10 seconds to show error
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          console.warn('YouTube API failed to load within timeout');
+          resolve();
+        }, 10000);
+      }
     });
   }
 
-  // main render: load 30 tiles based on platform
-  async function renderGrid(platform, identifier, originalUrl) {
+  // ---------- Render the grid ----------
+  async function renderGrid(platform, identifier) {
     destroyAllPlayers();
     gridContainer.innerHTML = '';
-    youTubePlayers = [];
-
+    
     if (platform === 'youtube') {
       activePlatform = 'youtube';
       platformIndicator.innerHTML = '🎬 YOUTUBE · 30× INDEPENDENT API';
@@ -569,7 +197,15 @@
       counterBox.style.display = 'block';
       activeCountSpan.innerText = TOTAL_TILES;
 
-      // create 30 cells
+      // Wait for YouTube API to be ready
+      await waitForYouTubeAPI();
+      if (!window.YT || !window.YT.Player) {
+        statusMsgSpan.innerText = '❌ YouTube API লোড হয়নি, পৃষ্ঠা রিফ্রেশ করুন';
+        liveStatusDiv.classList.remove('live');
+        return;
+      }
+
+      // Create tiles with staggered delay
       for (let i = 0; i < TOTAL_TILES; i++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
@@ -588,10 +224,14 @@
         cell.appendChild(playerContainer);
         gridContainer.appendChild(cell);
         
-        // give a small delay to not overload API at same millisecond
-        await new Promise(r => setTimeout(r, 20));
-        const ytPlayer = createYouTubePlayer(playerContainer, identifier, i, playerContainer);
-        youTubePlayers.push(ytPlayer);
+        // Small delay between each player creation to avoid overload
+        await new Promise(r => setTimeout(r, 30));
+        try {
+          const player = await createYouTubePlayer(playerContainer, identifier, i);
+          youTubePlayers.push(player);
+        } catch(err) {
+          console.error(`Failed to create player for tile ${i+1}`, err);
+        }
       }
     } 
     else if (platform === 'facebook') {
@@ -620,14 +260,14 @@
         cell.appendChild(embedWrapper);
         gridContainer.appendChild(cell);
         
-        // slight stagger to avoid request flood
+        // Staggered creation
         setTimeout(() => {
-          const iframeEmbed = createFacebookEmbed(identifier, i, embedWrapper);
-          cell._fbReload = iframeEmbed?._interval : null;
+          createFacebookEmbed(embedWrapper, identifier, i);
         }, i * 45);
       }
     }
-    // elegant fade-in effect
+    
+    // Fade-in animation
     const cells = document.querySelectorAll('.cell');
     cells.forEach((c, idx) => {
       c.style.opacity = '0';
@@ -640,7 +280,7 @@
     });
   }
 
-  // Main entry: parse url, detect platform
+  // ---------- Main entry ----------
   function loadHybridGrid() {
     const rawUrl = urlInput.value.trim();
     if (!rawUrl) {
@@ -649,23 +289,18 @@
       return;
     }
 
-    // detect YouTube
     const ytId = extractYouTubeId(rawUrl);
     if (ytId) {
-      currentVideoId = ytId;
-      renderGrid('youtube', ytId, rawUrl);
+      renderGrid('youtube', ytId);
       return;
     }
     
-    // detect Facebook
     const fbId = extractFacebookId(rawUrl);
     if (fbId) {
-      currentFBUrl = fbId;
-      renderGrid('facebook', fbId, rawUrl);
+      renderGrid('facebook', fbId);
       return;
     }
     
-    // fallback
     statusMsgSpan.innerText = '⚠️ অসমর্থিত লিংক (শুধু YouTube / Facebook)';
     liveStatusDiv.classList.remove('live');
     platformIndicator.innerHTML = '❗️ INVALID';
@@ -673,22 +308,11 @@
     counterBox.style.display = 'none';
   }
 
-  // manual event binding
-  launchBtn.addEventListener('click', () => {
-    loadHybridGrid();
-  });
-
+  // ---------- Event binding ----------
+  launchBtn.addEventListener('click', loadHybridGrid);
   urlInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') loadHybridGrid();
   });
 
-  // small preload: make sure YT API ready
-  let ytApiReady = false;
-  window.onYouTubeIframeAPIReady = function() {
-    ytApiReady = true;
-  };
-  // for fallback if API loads later, but our render uses YT constructor, will wait
-  console.log('dual grid player — human simulation active');
+  console.log('Dual Grid Player — ready');
 </script>
-</body>
-</html>
