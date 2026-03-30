@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Grid Player</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050508;
+      --panel: #0d0d14;
+      --border: #1e1e2e;
+      --accent: #00f5c4;
+      --accent2: #ff3c6e;
+      --text: #e0e0ff;
+      --muted: #555577;
+      --glow: 0 0 18px #00f5c455;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative; z-index: 10;
+      padding: 28px 32px 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: .78rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── INPUT BAR ── */
+    .input-section {
+      position: relative; z-index: 10;
+      margin: 28px auto 0;
+      max-width: 680px;
+      padding: 0 20px;
+    }
+
+    .input-wrapper {
+      display: flex; gap: 10px; align-items: stretch;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 6px 6px 14px;
+      transition: border-color .3s;
+    }
+    .input-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      background: transparent;
+      border: none; outline: none;
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: .95rem;
+      letter-spacing: .5px;
+    }
+    .input-wrapper input::placeholder { color: var(--muted); }
+
+    .btn-play {
+      background: linear-gradient(135deg, var(--accent), #00c49a);
+      color: #000;
+      border: none; outline: none; cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700; font-size: .95rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 3px;
+      transition: opacity .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .btn-play:hover { opacity: .85; transform: scale(1.03); }
+    .btn-play:active { transform: scale(.97); }
+
+    .hint {
+      margin-top: 9px;
+      font-size: .72rem;
+      color: var(--muted);
+      letter-spacing: .5px;
+      text-align: center;
+    }
+    .hint span { color: var(--accent); }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      position: relative; z-index: 10;
+      display: flex; justify-content: center; align-items: center; gap: 20px;
+      margin: 20px auto 0;
+      max-width: 680px;
+      padding: 0 20px;
+      font-size: .72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .status-bar .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--muted);
+      transition: background .3s, box-shadow .3s;
+    }
+    .status-bar.live .dot {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; } 50% { opacity:.4; }
+    }
+    .status-bar.live .label { color: var(--accent); }
+
+    /* ── GRID ── */
+    .grid-wrapper {
+      position: relative; z-index: 5;
+      padding: 28px 20px 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .cell {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color .25s, transform .25s;
+    }
+    .cell:hover {
+      border-color: var(--accent);
+      transform: scale(1.02);
+      z-index: 2;
+    }
+    .cell iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none;
+      pointer-events: none; /* prevent pause on click */
+    }
+
+    /* number badge */
+    .cell .badge {
+      position: absolute;
+      top: 6px; left: 7px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent);
+      background: rgba(0,0,0,.6);
+      padding: 1px 6px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* scan-line overlay per cell */
+    .cell::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,.08) 3px,
+        rgba(0,0,0,.08) 4px
+      );
+      pointer-events: none; z-index: 2;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 16px;
+      min-height: 340px;
+      color: var(--muted);
+    }
+    .empty-icon {
+      font-size: 4rem; opacity: .25;
+    }
+    .empty-text {
+      font-size: .85rem; letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── COUNTER FOOTER ── */
+    .counter {
+      position: fixed;
+      bottom: 18px; right: 22px;
+      z-index: 20;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: .75rem; letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: right;
+    }
+    .counter strong { color: var(--accent); font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">▶ GRID PLAYER</div>
+  <div class="tagline">30× Simultaneous · Muted · Infinite Loop</div>
+</header>
+
+<div class="input-section">
+  <div class="input-wrapper">
+    <input type="text" id="urlInput"
+      placeholder="YouTube লিংক এখানে পেস্ট করুন…"
+      autocomplete="off" spellcheck="false"/>
+    <button class="btn-play" onclick="loadVideos()">▶ PLAY ALL</button>
+  </div>
+  <p class="hint">উদাহরণ: <span>https://www.youtube.com/watch?v=XXXXXXXXXX</span></p>
+</div>
+
+<div class="status-bar" id="statusBar">
+  <span class="dot"></span>
+  <span class="label" id="statusLabel">অপেক্ষায় আছে…</span>
+</div>
+
+<div class="grid-wrapper">
+  <div class="grid" id="grid">
+    <div class="empty-state">
+      <div class="empty-icon">⊞</div>
+      <div class="empty-text">লিংক দিন এবং PLAY ALL চাপুন</div>
+    </div>
+  </div>
+</div>
+
+<div class="counter" id="counter" style="display:none">
+  <strong id="countNum">30</strong><br>ভিডিও চলছে
+</div>
+
+<script>
+  const TOTAL = 30;
+
+  function extractVideoId(url) {
+    try {
+      const u = new URL(url.trim());
+      if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+      if (u.hostname.includes('youtube.com')) {
+        if (u.searchParams.get('v')) return u.searchParams.get('v');
+        const m = u.pathname.match(/\/(?:embed|v|shorts)\/([^/?&]+)/);
+        if (m) return m[1];
+      }
+    } catch {}
+    // fallback regex
+    const m = url.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function loadVideos() {
+    const raw = document.getElementById('urlInput').value;
+    const vid = extractVideoId(raw);
+    const grid = document.getElementById('grid');
+    const statusBar = document.getElementById('statusBar');
+    const statusLabel = document.getElementById('statusLabel');
+    const counter = document.getElementById('counter');
+
+    if (!vid) {
+      statusLabel.textContent = '⚠ ভুল লিংক — সঠিক YouTube URL দিন';
+      statusBar.classList.remove('live');
+      return;
+    }
+
+    grid.innerHTML = '';
+
+    // YouTube embed params: autoplay, mute, loop, playlist (required for loop)
+    const params = new URLSearchParams({
+      autoplay: 1,
+      mute: 1,
+      loop: 1,
+      playlist: vid,   // loop needs playlist param = same video id
+      controls: 0,
+      modestbranding: 1,
+      rel: 0,
+      disablekb: 1,
+      iv_load_policy: 3,
+      fs: 0,
+    });
+
+    for (let i = 1; i <= TOTAL; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.style.animationDelay = `${(i-1)*40}ms`;
+
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = `#${String(i).padStart(2,'0')}`;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${vid}?${params}`;
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.loading = 'lazy';
+
+      cell.appendChild(badge);
+      cell.appendChild(iframe);
+      grid.appendChild(cell);
+    }
+
+    // staggered fade-in animation
+    grid.querySelectorAll('.cell').forEach((c, i) => {
+      c.style.opacity = '0';
+      c.style.transform = 'scale(.93)';
+      c.style.transition = `opacity .4s ${i*30}ms, transform .4s ${i*30}ms, border-color .25s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        c.style.opacity = '1';
+        c.style.transform = '';
+      }));
+    });
+
+    statusBar.classList.add('live');
+    statusLabel.textContent = `${TOTAL}টি ভিডিও লাইভ — নিরবচ্ছিন্ন লুপ`;
+    counter.style.display = 'block';
+    document.getElementById('countNum').textContent = TOTAL;
+  }
+
+  // Enter key support
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') loadVideos();
+  });
+</script>
+</body>
+</html>
